@@ -60,7 +60,7 @@ def get_sources_list(configuration):
                     for service in services])
     elif 'dns_sources' in configuration:
         return set(["http://{1[user]}:{1[password]}@{0}:{1[port]}/{1[database]}".format(str(i[4][0]), consul_conf)
-                    for i in socket.getaddrinfo('api-sandbox-database-eu-west-1b.query.consul', 80))]
+                    for i in socket.getaddrinfo(consul_conf['dns_url'], 80))]
     else:
         return set([source['url'] for source in configuration['sources']])
 
