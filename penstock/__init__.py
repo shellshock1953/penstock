@@ -10,6 +10,7 @@ from logging.config import dictConfig
 import argparse
 import gevent
 import consul
+import socket
 from couchdb.client import Database, Server
 from yaml import load
 from time import sleep
@@ -57,9 +58,11 @@ def get_sources_list(configuration):
         services = c.catalog.service(consul_conf['name'], tag=consul_conf.get('tag', None))[1]
         return set(["http://{1[user]}:{1[password]}@{0[Address]}:{0[ServicePort]}/{1[database]}".format(service, consul_conf)
                     for service in services])
+    elif 'dns_sources' in configuration:
+        return set(["http://{1[user]}:{1[password]}@{0}:{1[port]}/{1[database]}".format(str(i[4][0]), consul_conf)
+                    for i in socket.getaddrinfo('api-sandbox-database-eu-west-1b.query.consul', 80))]
     else:
         return set([source['url'] for source in configuration['sources']])
-
 
 def run_checker(configuration):
     """
