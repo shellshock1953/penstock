@@ -59,15 +59,16 @@ def get_sources_list(configuration):
         return set(["http://{1[user]}:{1[password]}@{0[Address]}:{0[ServicePort]}/{1[database]}".format(service, consul_conf)
                     for service in services])
     elif 'dns_sources' in configuration:
+        consul_conf = configuration['dns_sources']
         return set(["http://{1[user]}:{1[password]}@{0}:{1[port]}/{1[database]}".format(str(i[4][0]), consul_conf)
-                    for i in socket.getaddrinfo(consul_conf['dns_url'], 80))]
+                    for i in socket.getaddrinfo(consul_conf['dns_url'], 80)])
     else:
         return set([source['url'] for source in configuration['sources']])
+
 
 def run_checker(configuration):
     """
     """
-
     server = Server(configuration['admin'])
     replicator_db = server['_replicator']
     sources_list = get_sources_list(configuration)
