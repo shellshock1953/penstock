@@ -21,22 +21,14 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger('replichecker')
 
 
-def get_task_for_replication(server, replicator_document):
+def get_tasks_for_replications(server, replicators_documents):
+    doc_ids = [replicator_document['_id'] for replicator_document in replicators_documents]
+    tasks = []
     for task in server.tasks():
-        if task['type'] == 'replication' and task.get('doc_id', None) == replicator_document['_id']:
-            logger.debug(repr(task))
-            return task
-
-
-def check_replication(server, replicator_document, configuration):
-    sleep(5)
-    replication_task = get_task_for_replication(server, replicator_document)
-    while replication_task:
-        logger.info("Current progress ({0[replication_id]}): {0[progress]}".format(replication_task))
-        sleep(5)
-        replication_task = get_task_for_replication(server, replicator_document)
-    logger.info("No task for replication")
-
+        if task['type'] == 'replication' and task.get('doc_id', None) in doc_ids:
+            logger.info("Current progress ({0[replication_id]}): {0[progress]}".format(task))
+            tasks.append(task)
+    return tasks
 
 def create_replication(replicator_db, target, source):
     logger.info("Create replication.")
@@ -46,7 +38,7 @@ def create_replication(replicator_db, target, source):
         'target': target,
         'source': source
     })
-    replicator_document = replicator_db[replicator_document_id]
+    replicator_document = replicator_db.get(replicator_document_id)
     logger.info("Replication created ({})".format(str(replicator_document)))
     return replicator_document
 
@@ -67,47 +59,57 @@ def get_sources_list(configuration):
 
 
 def run_checker(configuration):
-    """
-    """
     server = Server(configuration['admin'])
     replicator_db = server['_replicator']
+    minimal_replications = int(configuration.get('minimal_replications', 1))
     sources_list = get_sources_list(configuration)
+    if minimal_replications > len(sources_list):
+        logger.error("Replications count is lower then possible sources list")
+        return
     black_listed_sources = set([])
     while 1:
-        replicator_document = None
-        for replication_id in replicator_db:
-            if not replication_id.startswith('_design/'):
-
-                replicator_document_temp = replicator_db[replication_id]
-                if replicator_document_temp['target'] != configuration['target'] and replicator_document_temp.get('continuous', False):
+        replicator_documents = []
+        for i in range(minimal_replications):
+            for replication_id in replicator_db:
+                replicator_document = None
+                if replication_id.startswith('_design/'):
                     continue
-                if replicator_document_temp['source'] not in sources_list:
+                temp_replicator_document = replicator_db.get(replication_id)
+                if temp_replicator_document['target'] != configuration['target'] and temp_replicator_document.get('continuous', False):
                     continue
-                if replicator_document_temp.get('_replication_state', '') != 'triggered':
-                    logger.info("Delete replication. ID: {0[_id]}".format(replicator_document_temp))
-                    black_listed_sources.add(replicator_document_temp['source'])
+                if temp_replicator_document['source'] not in sources_list:
+                    continue
+                if temp_replicator_document.get('_replication_state', '') != 'triggered':
+                    logger.info("Delete replication. ID: {0[_id]}".format(temp_replicator_document))
+                    black_listed_sources.add(temp_replicator_document['source'])
                     logger.info('Blacklisted: {}'.format(black_listed_sources))
-                    replicator_db.delete(replicator_document_temp)
-                replicator_document = replicator_document_temp
-        if not replicator_document:
-            # create replication
-            logger.info("No active replication")
-            white_listed_sources = sources_list - black_listed_sources
-            if white_listed_sources:
-                replicator_document = create_replication(replicator_db,
-                                                         configuration['target'],
-                                                         white_listed_sources.pop())
-            else:
-                logger.warning("No white listed sources")
-                sleep(30)
-                logger.warning("Start with all listed sources")
-                black_listed_sources = set([])
-                continue
+                    replicator_db.delete(temp_replicator_document)
+                    continue
+                if temp_replicator_document['source'] in [rep['source'] for rep in replicator_documents]:
+                    continue
+                replicator_document = temp_replicator_document
+                break
+            if not replicator_document:
+                logger.info("No active replication")
+                white_listed_sources = sources_list - black_listed_sources
+                white_listed_sources -= set([replication['source'] for replication in replicator_documents])
+                if white_listed_sources:
+                    replicator_document = create_replication(replicator_db,
+                                                             configuration['target'],
+                                                             white_listed_sources.pop())
+                else:
+                    logger.warning("No white listed sources")
+                    sleep(30)
+                    logger.warning("Start with all listed sources")
+                    black_listed_sources = set([])
+                    continue
+            replicator_documents.append(replicator_document)
+        sleep(5)
+        while len(get_tasks_for_replications(server, replicator_documents)) == minimal_replications:
+            sleep(10)
 
-        check_replication(server, replicator_document, configuration)
         logger.info("Wait replication.")
         sleep(10)
-
 
 def main():
     parser = argparse.ArgumentParser(description='---- Penstock ----')
