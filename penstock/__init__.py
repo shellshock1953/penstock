@@ -11,6 +11,7 @@ import argparse
 import gevent
 import consul
 import socket
+from random import sample
 from couchdb.client import Database, Server
 from yaml import load
 from time import sleep
@@ -96,7 +97,7 @@ def run_checker(configuration):
                 if white_listed_sources:
                     replicator_document = create_replication(replicator_db,
                                                              configuration['target'],
-                                                             white_listed_sources.pop())
+                                                             sample(white_listed_sources, 1)[0])
                 else:
                     logger.warning("No white listed sources")
                     sleep(30)
