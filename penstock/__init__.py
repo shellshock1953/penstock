@@ -27,7 +27,11 @@ def get_tasks_for_replications(server, replicators_documents):
     tasks = []
     for task in server.tasks():
         if task['type'] == 'replication' and task.get('doc_id', None) in doc_ids:
-            logger.info("Current progress ({0[replication_id]}): {0[progress]}".format(task))
+            key = "perfdata.kv.{0[replication_id]}".format(task)
+            logger.info("Current progress ({0[replication_id]}): {0[progress]}".format(task), extra={
+                key: task['progress'],
+                "MESSAGE_ID": "PENSTOCK_REPLICATION_PROGRESS"
+            })
             tasks.append(task)
     return tasks
 
@@ -40,7 +44,9 @@ def create_replication(replicator_db, target, source):
         'source': source
     })
     replicator_document = replicator_db.get(replicator_document_id)
-    logger.info("Replication created ({})".format(str(replicator_document)))
+    logger.info("Replication created ({})".format(str(replicator_document)),
+                extra={'MESSAGE_ID': 'CREATE_REPLICATION',
+                       'perfdata.c.': 1})
     return replicator_document
 
 
@@ -65,7 +71,9 @@ def run_checker(configuration):
     minimal_replications = int(configuration.get('minimal_replications', 1))
     sources_list = get_sources_list(configuration)
     if minimal_replications > len(sources_list):
-        logger.error("Replications count is lower then possible sources list")
+        logger.error("Replications count is lower then possible sources list",
+                     extra={'MESSAGE_ID': 'REPLICATIONS_COUNT_IS_LOWER',
+                            'perfdata.c.': 1})
         return
     black_listed_sources = set([])
     while 1:
@@ -81,9 +89,13 @@ def run_checker(configuration):
                 if temp_replicator_document['source'] not in sources_list:
                     continue
                 if temp_replicator_document.get('_replication_state', '') != 'triggered':
-                    logger.info("Delete replication. ID: {0[_id]}".format(temp_replicator_document))
+                    logger.info("Delete replication. ID: {0[_id]}".format(temp_replicator_document),
+                                extra={'MESSAGE_ID': 'DELETE_REPLICATION',
+                                       'perfdata.c.': 1})
                     black_listed_sources.add(temp_replicator_document['source'])
-                    logger.info('Blacklisted: {}'.format(black_listed_sources))
+                    logger.info('Blacklisted: {}'.format(black_listed_sources),
+                                extra={'MESSAGE_ID': 'BLACKLISTED',
+                                       'perfdata.c.': 1})
                     replicator_db.delete(temp_replicator_document)
                     continue
                 if temp_replicator_document['source'] in [rep['source'] for rep in replicator_documents]:
