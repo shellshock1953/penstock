@@ -16,6 +16,7 @@ from couchdb.client import Database, Server
 from yaml import load
 from time import sleep
 import sys, os
+from urlparse import urlparse
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
@@ -33,16 +34,21 @@ def get_tasks_for_replications(server, replicators_documents):
             tasks.append(task)
     return tasks
 
+
 def create_replication(replicator_db, target, source):
     logger.info("Create replication.")
     replicator_document_id = replicator_db.create({
-        'create_target':  True,
+        'create_target': True,
         'continuous': True,
         'target': target,
         'source': source
     })
     replicator_document = replicator_db.get(replicator_document_id)
-    logger.info("Replication created ({})".format(str(replicator_document)),
+    replication_direction = \
+        '{0.hostname}{0.path} -> {1.hostname}{1.path}'.format(
+            urlparse(replicator_document.get('source', '')),
+            urlparse(replicator_document.get('target', '')))
+    logger.info("Replication created ({})".format(replication_direction),
                 extra={'MESSAGE_ID': 'CREATE_REPLICATION'})
     return replicator_document
 
@@ -88,7 +94,7 @@ def run_checker(configuration):
                     logger.info("Delete replication. ID: {0[_id]}".format(temp_replicator_document),
                                 extra={'MESSAGE_ID': 'DELETE_REPLICATION'})
                     black_listed_sources.add(temp_replicator_document['source'])
-                    logger.info('Blacklisted: {}'.format(black_listed_sources),
+                    logger.info('Blacklisted: {}'.format(temp_replicator_document.get('source', '').split('@')[-1]),
                                 extra={'MESSAGE_ID': 'BLACKLISTED'})
                     replicator_db.delete(temp_replicator_document)
                     continue
