@@ -16,6 +16,7 @@ from couchdb.client import Database, Server
 from yaml import load
 from time import sleep
 import sys, os
+from urlparse import urlparse
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
@@ -27,20 +28,28 @@ def get_tasks_for_replications(server, replicators_documents):
     tasks = []
     for task in server.tasks():
         if task['type'] == 'replication' and task.get('doc_id', None) in doc_ids:
-            logger.info("Current progress ({0[replication_id]}): {0[progress]}".format(task))
+            logger.info(
+                "Current progress ({0[replication_id]}): {0[progress]}".format(
+                    task), extra={'REPLICATIONS_PROGRESS': task['progress']})
             tasks.append(task)
     return tasks
+
 
 def create_replication(replicator_db, target, source):
     logger.info("Create replication.")
     replicator_document_id = replicator_db.create({
-        'create_target':  True,
+        'create_target': True,
         'continuous': True,
         'target': target,
         'source': source
     })
     replicator_document = replicator_db.get(replicator_document_id)
-    logger.info("Replication created ({})".format(str(replicator_document)))
+    replication_direction = \
+        '{0.hostname}{0.path} -> {1.hostname}{1.path}'.format(
+            urlparse(replicator_document.get('source', '')),
+            urlparse(replicator_document.get('target', '')))
+    logger.info("Replication created ({})".format(replication_direction),
+                extra={'MESSAGE_ID': 'CREATE_REPLICATION'})
     return replicator_document
 
 
@@ -65,7 +74,8 @@ def run_checker(configuration):
     minimal_replications = int(configuration.get('minimal_replications', 1))
     sources_list = get_sources_list(configuration)
     if minimal_replications > len(sources_list):
-        logger.error("Replications count is lower then possible sources list")
+        logger.error("Replications count is lower then possible sources list",
+                     extra={'MESSAGE_ID': 'REPLICATIONS_COUNT_IS_LOWER'})
         return
     black_listed_sources = set([])
     while 1:
@@ -81,9 +91,11 @@ def run_checker(configuration):
                 if temp_replicator_document['source'] not in sources_list:
                     continue
                 if temp_replicator_document.get('_replication_state', '') != 'triggered':
-                    logger.info("Delete replication. ID: {0[_id]}".format(temp_replicator_document))
+                    logger.info("Delete replication. ID: {0[_id]}".format(temp_replicator_document),
+                                extra={'MESSAGE_ID': 'DELETE_REPLICATION'})
                     black_listed_sources.add(temp_replicator_document['source'])
-                    logger.info('Blacklisted: {}'.format(black_listed_sources))
+                    logger.info('Blacklisted: {}'.format(temp_replicator_document.get('source', '').split('@')[-1]),
+                                extra={'MESSAGE_ID': 'BLACKLISTED'})
                     replicator_db.delete(temp_replicator_document)
                     continue
                 if temp_replicator_document['source'] in [rep['source'] for rep in replicator_documents]:
