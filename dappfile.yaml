@@ -1,0 +1,53 @@
+---
+dimg: 'penstock'
+from: 'fedora:27'
+docker:
+  ENV: 
+    TZ: Europe/Kiev
+  USER: 'penstock:penstock'
+  WORKDIR: '/opt/penstock'
+  CMD: 
+    - bin/penstock
+    - etc/penstock.yaml
+mount: 
+  - to: '/var/cache/dnf'
+    from: build_dir
+
+git:
+  - add: /
+    to: /opt/penstock
+    owner: penstock
+    group: penstock
+    stageDependencies:
+      beforeSetup: 
+        - '*'
+ansible:
+  beforeInstall:
+    - raw: dnf install --nodocs gcc python2-virtualenv libyaml libffi -y
+    - group:
+        name: penstock
+        state: present
+    - user:
+        name: penstock
+        shell: /bin/bash
+        home: /opt/penstock
+        groups: 
+          - penstock
+          - wheel
+        password: penstock
+  install:
+    - pip:
+        requirements: /opt/penstock/requirements.txt
+        virtualenv: /opt/penstock
+      become_user: penstock
+  beforeSetup:
+    - shell: bin/buildout
+      args:
+        chdir: /opt/penstock
+      become_user: penstock
+  setup:
+    - shell: bin/py.test src/penstock
+      args:
+        chdir: /opt/penstock
+      become_user: penstock
+

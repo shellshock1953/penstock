@@ -14,7 +14,8 @@ setup(name='penstock',
       author_email='info@quintagroup.com',
       url='http://quintagroup.com/',
       license='Apache License 2.0',
-      packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
+      package_dir={'': 'src'},
+      packages=find_packages('src', exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
       install_requires=[
@@ -24,6 +25,12 @@ setup(name='penstock',
             "CouchDB",
             "PyYAML"
       ],
+      extras_require={
+        'test': [
+            'pytest',
+            'pytest-cov'
+        ]
+      },
       entry_points={
           'console_scripts': [
               'penstock = penstock:main'
