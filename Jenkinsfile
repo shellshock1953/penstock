@@ -1,9 +1,10 @@
 pipeline {
   agent any
   stages {
-    stage('') {
+    stage('error') {
+      agent any
       steps {
-        gitChangelog()
+        sh 'printenv'
       }
     }
   }
