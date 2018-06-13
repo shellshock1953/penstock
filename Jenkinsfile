@@ -27,7 +27,7 @@ pipeline {
       }
      
       steps {
-        sh "rm -rf output/${PACKAGE}"
+        sh "rm -rf output/penstock"
         sh "mkdir -p output"
         script {
            docker.image("penstock:${BUILD_NUMBER}").withRun { container ->
