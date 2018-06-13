@@ -6,6 +6,40 @@ ci_cd_params = [
     packages: []
 ]
 
+def postPerPackage() {
+    sh (encoding: 'UTF-8', script: "rm -rf output/penstock")
+    unstash(name: "penstock")
+}
+
+def postPipeline() {
+    junit (
+        testResults: 'output/**/junit.xml',
+        allowEmptyResults: true
+    )
+    cobertura  (
+        autoUpdateHealth: false,
+        autoUpdateStability: false,
+        coberturaReportFile: 'output/**/coverage.xml',
+        conditionalCoverageTargets: '70, 0, 0',
+        failNoReports: false,
+        failUnhealthy: false,
+        failUnstable: false,
+        lineCoverageTargets: '80, 0, 0',
+        maxNumberOfBuilds: 0,
+        methodCoverageTargets: '80, 0, 0',
+        onlyStable: false,
+        sourceEncoding: 'ASCII',
+        zoomCoverageChart: false,
+    )
+    if (currentBuild.currentResult == 'SUCCESS') { COLOR = 'good' } else { COLOR = 'danger' }
+
+    MESSAGE = "${currentBuild.currentResult}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] (${env.BUILD_URL}) $ci_cd_params.logs"
+    slackSend (message: MESSAGE, color: COLOR, channel: recipient)
+    if (currentBuild.currentResult == 'SUCCESS') {
+                
+        docker.image("${ci_cd_params.image}").push("latest")
+    }
+}
 
 pipeline {
   agent {
@@ -15,6 +49,15 @@ pipeline {
 
   }
   stages {
+        post {
+        always {
+            node('master') {
+                script {
+                    postPipeline()
+                }
+            }
+        }
+    }
     stage('Build') {
       agent {
         node {
@@ -56,6 +99,15 @@ pipeline {
              }
            }
         }
+       post {
+         always {
+           script {
+             node('master') {
+               postPerPackage()
+             }
+           }
+         }
+       }
       }
     }
   }
