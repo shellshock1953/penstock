@@ -40,8 +40,8 @@ def postPipeline() {
     MESSAGE = "${currentBuild.currentResult}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] (${env.BUILD_URL}) $ci_cd_params.logs"
     slackSend(message: MESSAGE, color: COLOR)
     if (currentBuild.currentResult == 'SUCCESS') {
-
-        docker.image("penstock:${ci_cd_params.tag}").push("latest")
+        sh "dapp dimg spush penstock --tag ${BRANCH_NAME.toLowerCase()}-latest"
+        // docker.image("penstock:${ci_cd_params.tag}").push("latest")
     }
 }
 
