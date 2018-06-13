@@ -1,3 +1,12 @@
+ci_cd_params = [
+    logs: "\n",
+    user: "penstock",
+    image: "${JOB_NAME.toLowerCase()}:${BUILD_NUMBER}",
+    buildout: [branch: 'next', repo: 'https://github.com/openprocurement/penstock'],
+    packages: []
+]
+
+
 pipeline {
   agent {
     node {
