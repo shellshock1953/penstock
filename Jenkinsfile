@@ -37,7 +37,7 @@ def postPipeline() {
         COLOR = 'danger'
     }
 
-    MESSAGE = "${currentBuild.currentResult}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] (${env.BUILD_URL}) $ci_cd_params.logs"
+    MESSAGE = "${currentBuild.currentResult}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] (${env.RUN_DISPLAY_URL}) $ci_cd_params.logs"
     slackSend(message: MESSAGE, color: COLOR)
     if (currentBuild.currentResult == 'SUCCESS') {
         sh "dapp dimg spush penstock --tag ${BRANCH_NAME.toLowerCase()}-latest"
