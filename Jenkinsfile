@@ -7,7 +7,12 @@ pipeline {
   }
   stages {
     stage('Build') {
-      agent any
+      agent {
+        node {
+          label 'master'
+        }
+
+      }
       steps {
         sh 'printenv'
         sh '''dapp dimg build
