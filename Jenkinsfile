@@ -38,7 +38,7 @@ def postPipeline() {
     }
 
     MESSAGE = "${currentBuild.currentResult}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] (${env.BUILD_URL}) $ci_cd_params.logs"
-    slackSend(message: MESSAGE, color: COLOR, channel: recipient)
+    slackSend(message: MESSAGE, color: COLOR)
     if (currentBuild.currentResult == 'SUCCESS') {
 
         docker.image("${ci_cd_params.image}").push("latest")
