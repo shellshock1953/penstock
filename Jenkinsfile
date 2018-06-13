@@ -1,5 +1,10 @@
 pipeline {
-  agent none
+  agent {
+    node {
+      label 'master'
+    }
+
+  }
   stages {
     stage('Build') {
       agent any
@@ -10,7 +15,12 @@ pipeline {
       }
     }
     stage('Tests') {
-      agent any
+      agent {
+        node {
+          label 'master'
+        }
+
+      }
       steps {
         sh 'dapp dimg run -- bin/py.test src/penstock'
         sh 'dapp dimg run -- bin/py.test src/penstock'
