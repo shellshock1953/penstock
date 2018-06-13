@@ -62,7 +62,7 @@ pipeline {
             }
             steps {
                 sh 'dapp dimg build'
-                sh 'dapp dimg spush penstock --tag ${ci_cd_params.tag}'
+                sh "dapp dimg spush penstock --tag ${ci_cd_params.tag}"
             }
         }
         stage('Tests') {
