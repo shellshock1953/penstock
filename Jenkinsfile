@@ -29,7 +29,7 @@ pipeline {
         sh "rm -rf output/penstock"
         sh "mkdir -p output"
         script {
-           docker.image("penstock:${BUILD_NUMBER}").withRun('', 'bash') { container ->
+           docker.image("penstock:${BUILD_NUMBER}").withRun('-i', 'bash') { container ->
              try {
                sh "docker exec ${container.id} mkdir /tmp/output"
                sh "docker exec ${container.id} bin/py.test --pyargs penstock -v -o 'python_files=*.py' --doctest-modules --junitxml=/tmp/output/junit.xml --cov-report xml:/tmp/output/coverage.xml --cov-report term --cov=penstock"
