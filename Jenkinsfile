@@ -10,6 +10,6 @@ pipeline {
     }
   }
   environment {
-    PATH = '$PATH:/usr/local/bin'
+    PATH = '${env.PATH}:/usr/local/bin'
   }
 }
