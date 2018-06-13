@@ -101,6 +101,9 @@ pipeline {
                     branch 'master'; branch 'next'
                 }
             }
+            environment {
+                DOCKER_FROM = "penstock:${ci_cd_params.tag}"
+            }
             steps {
                 sh 'printenv'
                 sh 'dapp dimg build --dir rpm'
