@@ -41,7 +41,6 @@ def postPipeline() {
     slackSend(message: MESSAGE, color: COLOR)
     if (currentBuild.currentResult == 'SUCCESS') {
         sh "dapp dimg spush penstock --tag ${BRANCH_NAME.toLowerCase()}-latest"
-        // docker.image("penstock:${ci_cd_params.tag}").push("latest")
     }
 }
 
