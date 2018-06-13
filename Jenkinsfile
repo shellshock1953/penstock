@@ -1,11 +1,11 @@
 pipeline {
   agent any
   stages {
-    stage('error') {
+    stage('Build') {
       agent any
       steps {
-        sh '''ls -la
-pwd'''
+        sh '''/usr/local/bin/dapp dimg build
+'''
       }
     }
   }
