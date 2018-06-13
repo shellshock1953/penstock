@@ -111,8 +111,8 @@ pipeline {
                 DOCKER_FROM = "penstock:${ci_cd_params.tag}"
             }
             steps {
-                sh 'dapp dimg build --dir rpm --build-dir build'
-                archiveArtifacts artifacts: 'build/mount/root/rpmbuild/RPMS/x86_64/*.rpm', fingerprint: true
+                sh 'dapp dimg build --dir rpm --build-dir target'
+                archiveArtifacts artifacts: 'target/mount/root/rpmbuild/RPMS/x86_64/*.rpm', fingerprint: true
             }
 
         }
