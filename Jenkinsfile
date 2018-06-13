@@ -1,7 +1,7 @@
 ci_cd_params = [
     logs: "\n",
     user: "penstock",
-    image: "${JOB_NAME.toLowerCase()}:${BUILD_NUMBER}",
+    tag: "${BRANCH_NAME.toLowerCase()}_${BUILD_NUMBER}",
     buildout: [branch: 'next', repo: 'https://github.com/openprocurement/penstock'],
     packages: []
 ]
@@ -41,7 +41,7 @@ def postPipeline() {
     slackSend(message: MESSAGE, color: COLOR)
     if (currentBuild.currentResult == 'SUCCESS') {
 
-        docker.image("${ci_cd_params.image}").push("latest")
+        docker.image("penstock:${ci_cd_params.tag}").push("latest")
     }
 }
 
@@ -62,7 +62,7 @@ pipeline {
             }
             steps {
                 sh 'dapp dimg build'
-                sh 'dapp dimg spush penstock --tag ${BUILD_NUMBER}'
+                sh 'dapp dimg spush penstock --tag ${ci_cd_params.tag}'
             }
         }
         stage('Tests') {
@@ -76,7 +76,7 @@ pipeline {
                 sh "rm -rf output/penstock"
                 sh "mkdir -p output"
                 script {
-                    docker.image("penstock:${BUILD_NUMBER}").withRun('-i', 'bash') {container ->
+                    docker.image("penstock:${ci_cd_params.tag}").withRun('-i', 'bash') {container ->
                         try {
                                 sh "docker exec ${container.id} mkdir /tmp/output"
                                 sh "docker exec ${container.id} bin/py.test --pyargs penstock -v -o 'python_files=*.py' --doctest-modules --junitxml=/tmp/output/junit.xml --cov-report xml:/tmp/output/coverage.xml --cov-report term --cov=penstock"
