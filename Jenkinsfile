@@ -4,8 +4,7 @@ pipeline {
     stage('Build') {
       agent any
       steps {
-        sh '''printenv
-dapp dimg build
+        sh '''dapp dimg build
 '''
       }
     }
