@@ -96,6 +96,11 @@ pipeline {
             }
         }
         stage('RPM') {
+            agent {
+                node {
+                    label 'master'
+                }
+            }            
             when {
                 anyOf {
                     branch 'master'; branch 'next'

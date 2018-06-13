@@ -7,6 +7,6 @@ mount:
 
 ansible:
   beforeInstall:
-    - raw: dnf install --nodocs rpmbuild -y
+    - raw: dnf install --nodocs rpm-build -y
 
 
