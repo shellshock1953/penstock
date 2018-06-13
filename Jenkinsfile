@@ -61,9 +61,7 @@ pipeline {
 
             }
             steps {
-                sh ''
-                'dapp dimg build'
-                ''
+                sh 'dapp dimg build'
                 sh 'dapp dimg spush penstock --tag ${BUILD_NUMBER}'
             }
         }
@@ -78,12 +76,11 @@ pipeline {
                 sh "rm -rf output/penstock"
                 sh "mkdir -p output"
                 script {
-                    docker.image("penstock:${BUILD_NUMBER}").withRun('-i', 'bash') {
-                        container - >
-                            try {
+                    docker.image("penstock:${BUILD_NUMBER}").withRun('-i', 'bash') {container - >
+                        try {
                                 sh "docker exec ${container.id} mkdir /tmp/output"
                                 sh "docker exec ${container.id} bin/py.test --pyargs penstock -v -o 'python_files=*.py' --doctest-modules --junitxml=/tmp/output/junit.xml --cov-report xml:/tmp/output/coverage.xml --cov-report term --cov=penstock"
-                            }
+                        }
                         finally {
                             sh(
                                 encoding: 'UTF-8',
