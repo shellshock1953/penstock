@@ -112,6 +112,7 @@ pipeline {
             }
             steps {
                 sh 'dapp dimg build --dir rpm --build-dir build'
+                archiveArtifacts artifacts: 'build/mount/root/rpmbuild/RPMS/x86_64/*.rpm', fingerprint: true
             }
 
         }
