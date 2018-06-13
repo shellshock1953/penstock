@@ -96,12 +96,12 @@ pipeline {
                 }
             }
         }
-        post {
-            always {
-                script {
-                    node('master') {
-                        postPerPackage()
-                    }
+    }
+    post {
+        always {
+            script {
+                node('master') {
+                    postPerPackage()
                 }
             }
         }
