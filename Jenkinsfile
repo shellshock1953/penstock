@@ -1,7 +1,7 @@
 ci_cd_params = [
     logs: "\n",
     user: "penstock",
-    tag: "${BRANCH_NAME.toLowerCase()}_${BUILD_NUMBER}",
+    tag: "${BRANCH_NAME.toLowerCase()}-${BUILD_NUMBER}",
     buildout: [branch: 'next', repo: 'https://github.com/openprocurement/penstock'],
     packages: []
 ]
