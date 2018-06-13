@@ -4,6 +4,8 @@ from: '{{ env "DOCKER_FROM" }}'
 mount: 
   - to: '/var/cache/dnf'
     from: build_dir
+  - to: '/root/rpmbuild/RPMS'
+    from: build_dir
 docker:
   ENV: 
     TZ: Europe/Kiev
