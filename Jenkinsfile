@@ -95,6 +95,19 @@ pipeline {
                 }
             }
         }
+        stage('RPM') {
+            when {
+                anyOf {
+                    branch 'master'; branch 'next'
+                }
+            }
+            steps {
+                sh 'dapp dimg build --dir rpm'
+            }
+
+        }
+
+
     }
     post {
         always {
