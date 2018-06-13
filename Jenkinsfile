@@ -102,6 +102,7 @@ pipeline {
                 }
             }
             steps {
+                sh 'printenv'
                 sh 'dapp dimg build --dir rpm'
             }
 
