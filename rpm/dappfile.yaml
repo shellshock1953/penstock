@@ -1,0 +1,12 @@
+---
+dimg: 'penstock'
+from: '{{ env "DOCKER_FROM" }}'
+mount: 
+  - to: '/var/cache/dnf'
+    from: build_dir
+
+ansible:
+  beforeInstall:
+    - raw: dnf install --nodocs rpmbuild -y
+
+
