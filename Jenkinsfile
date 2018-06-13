@@ -17,7 +17,9 @@ pipeline {
         sh '''dapp dimg build
 '''
         sh 'dapp dimg tag --tag ${BUILD_NUMBER}'
-        docker.image("penstock/penstock:${BUILD_NUMBER}").push()
+        script {
+          docker.image("penstock/penstock:${BUILD_NUMBER}").push()
+        }    
       }
     }
     stage('Tests') {
