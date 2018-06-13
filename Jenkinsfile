@@ -10,7 +10,4 @@ dapp dimg build
       }
     }
   }
-  environment {
-    PATH = '${env.PATH}:/usr/local/bin'
-  }
 }
