@@ -9,6 +9,7 @@ pipeline {
       }
     }
     stage('Tests') {
+      agent any
       steps {
         sh 'dapp dimg run -- bin/py.test src/penstock'
         sh 'dapp dimg run -- bin/py.test src/penstock'
