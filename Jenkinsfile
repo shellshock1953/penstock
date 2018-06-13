@@ -4,7 +4,7 @@ pipeline {
     stage('Build') {
       agent any
       steps {
-        sh '''/usr/local/bin/dapp dimg build
+        sh '''dapp dimg build
 '''
       }
     }
