@@ -102,6 +102,7 @@ pipeline {
             script {
                 node('master') {
                     postPerPackage()
+                    postPipeline()
                 }
             }
         }
