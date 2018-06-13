@@ -8,5 +8,11 @@ pipeline {
 '''
       }
     }
+    stage('Tests') {
+      steps {
+        sh 'dapp dimg run -- bin/py.test src/penstock'
+        sh 'dapp dimg run -- bin/py.test src/penstock'
+      }
+    }
   }
 }
