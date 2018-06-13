@@ -14,9 +14,10 @@ pipeline {
 
       }
       steps {
-        sh 'printenv'
         sh '''dapp dimg build
 '''
+        sh 'dapp dimg tag --tag ${BUILD_NUMBER}'
+        docker.image("penstock/penstock:${BUILD_NUMBER}").push()
       }
     }
     stage('Tests') {
@@ -27,7 +28,6 @@ pipeline {
 
       }
       steps {
-        sh 'dapp dimg run -- bin/py.test src/penstock'
         sh 'dapp dimg run -- bin/py.test src/penstock'
       }
     }
