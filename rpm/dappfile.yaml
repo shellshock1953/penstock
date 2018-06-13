@@ -4,9 +4,21 @@ from: '{{ env "DOCKER_FROM" }}'
 mount: 
   - to: '/var/cache/dnf'
     from: build_dir
-
+docker:
+  ENV: 
+    TZ: Europe/Kiev
+  USER: 'root:root'
+  WORKDIR: '/root'
+  CMD: 
+    - bash
 ansible:
   beforeInstall:
     - raw: dnf install --nodocs rpm-build -y
+    - copy:
+        src: '/opt/penstock/rpm/penstock.spec'
+        dest: '/root/penstock.spec'
+    - shell: 'rpmbuild -ba /root/penstock.spec'
+      args:
+        chdir: '/root'
 
 

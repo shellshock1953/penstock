@@ -1,0 +1,44 @@
+# Replicate with url sources :
+# replication_0:
+#   sources:
+#    - url: http://user:pass@host:port/database
+#   target: http://user:pass@host:port/database
+#   admin: http://admin_user:admin_pass@host:port/database
+
+
+# Replicate with dns sources :
+# replication_1:
+#   dns_sources:
+#     database: database
+#     user: user
+#     password: password
+#     dns_url: domain_name
+#     port: port
+#   target: http://user:pass@host:port/database
+#   admin: http://admin_user:admin_pass@host:port/database
+#   minimal_replications: 1
+
+
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  simple:
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: simple
+    stream: ext://sys.stdout
+
+loggers:
+  replichecker:
+    handlers: [console]
+    propagate: no
+    level: INFO
+
+  "":
+    handlers: [console]
+    level: INFO

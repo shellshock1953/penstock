@@ -1,0 +1,12 @@
+[Unit]
+Description=Penstock
+After=network.target
+
+[Service]
+Type=simple
+User=penstock
+ExecStart=/opt/penstock/bin/penstock /etc/penstock/penstock.yml
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
