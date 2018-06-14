@@ -84,7 +84,7 @@ pipeline {
                     docker.image("penstock/component:${ci_cd_params.tag}").withRun("-i", "bash") {container ->
                         try {
                                 sh "docker exec ${container.id} mkdir /tmp/output"
-                                sh "docker exec ${container.id} bin/py.test --pyargs penstock -v -o "python_files=*.py" --doctest-modules --junitxml=/tmp/output/junit.xml --cov-report xml:/tmp/output/coverage.xml --cov-report term --cov=penstock"
+                                sh "docker exec ${container.id} bin/py.test --pyargs penstock -v -o 'python_files=*.py' --doctest-modules --junitxml=/tmp/output/junit.xml --cov-report xml:/tmp/output/coverage.xml --cov-report term --cov=penstock"
                         }
                         finally {
                             sh(
