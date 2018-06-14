@@ -2,7 +2,6 @@ ci_cd_params = [
     logs: "\n",
     user: "penstock",
     tag: "${BRANCH_NAME.toLowerCase()}-${BUILD_NUMBER}",
-    rpm_tag: "${BRANCH_NAME.toLowerCase()}-rpm-${BUILD_NUMBER}",
     buildout: [branch: 'next', repo: 'https://github.com/openprocurement/penstock'],
     packages: []
 ]
@@ -41,7 +40,10 @@ def postPipeline() {
     MESSAGE = "${currentBuild.currentResult}: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] (${env.RUN_DISPLAY_URL}) $ci_cd_params.logs"
     slackSend(message: MESSAGE, color: COLOR)
     if (currentBuild.currentResult == 'SUCCESS') {
-        sh "dapp dimg spush penstock --tag ${BRANCH_NAME.toLowerCase()}-latest"
+        sh 'dapp dimg tag --tag ${BRANCH_NAME.toLowerCase()}-latest component penstock'
+        script {
+            docker.image("penstock/component:${BRANCH_NAME.toLowerCase()}-latest").push()
+        }
     }
 }
 
@@ -61,8 +63,11 @@ pipeline {
 
             }
             steps {
-                sh 'dapp dimg build'
-                sh "dapp dimg spush penstock --tag ${ci_cd_params.tag}"
+                sh 'dapp dimg build component'
+                sh 'dapp dimg tag --tag ${ci_cd_params.tag} component penstock'
+                script {
+                    docker.image("penstock/component:${ci_cd_params.tag}").push()
+                }
             }
         }
         stage('Tests') {
@@ -76,7 +81,7 @@ pipeline {
                 sh "rm -rf output/penstock"
                 sh "mkdir -p output"
                 script {
-                    docker.image("penstock:${ci_cd_params.tag}").withRun('-i', 'bash') {container ->
+                    docker.image("penstock/component:${ci_cd_params.tag}").withRun('-i', 'bash') {container ->
                         try {
                                 sh "docker exec ${container.id} mkdir /tmp/output"
                                 sh "docker exec ${container.id} bin/py.test --pyargs penstock -v -o 'python_files=*.py' --doctest-modules --junitxml=/tmp/output/junit.xml --cov-report xml:/tmp/output/coverage.xml --cov-report term --cov=penstock"
@@ -104,15 +109,17 @@ pipeline {
             }            
             when {
                 anyOf {
-                    branch 'master'
+                    branch 'next'
                 }
             }
-            environment {
-                DOCKER_FROM = "penstock:${ci_cd_params.tag}"
-            }
             steps {
-                sh 'dapp dimg build --dir rpm --build-dir target'
-                archiveArtifacts artifacts: 'target/mount/root/rpmbuild/RPMS/x86_64/*.rpm', fingerprint: true
+                sh 'dapp dimg build rpm'
+                sh 'dapp dimg tag --tag ${ci_cd_params.tag} rpm penstock'
+                docker.image("penstock/component:${ci_cd_params.tag}").withRun('-i', 'bash') {container ->
+                    sh(script: "mkdir target")
+                    sh(script: "docker cp ${container.id}:/root/rpmbuild/RPMS/x86_64/. target")
+                }
+                archiveArtifacts artifacts: 'target/*.rpm', fingerprint: true
             }
 
         }

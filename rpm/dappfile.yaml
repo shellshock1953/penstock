@@ -1,6 +1,6 @@
 ---
-dimg: 'penstock'
-from: '{{ env "DOCKER_FROM" }}'
+dimg: 'penstock-rpm'
+fromDimg: 'penstock'
 mount: 
   - to: '/var/cache/dnf'
     from: build_dir
