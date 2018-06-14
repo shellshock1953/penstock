@@ -113,7 +113,7 @@ pipeline {
                 }
             }
             environment {
-                RELEASE = "${ci_cd_params.tag}"
+                RELEASE = "${env.GIT_COMMIT}"
             }
             steps {
                 sh "dapp dimg build rpm"
