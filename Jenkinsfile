@@ -109,7 +109,7 @@ pipeline {
             }            
             when {
                 anyOf {
-                    branch "next"
+                    branch "master"
                 }
             }
             environment {
