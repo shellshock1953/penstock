@@ -115,9 +115,11 @@ pipeline {
             steps {
                 sh 'dapp dimg build rpm'
                 sh 'dapp dimg tag --tag ${ci_cd_params.tag} rpm penstock'
-                docker.image("penstock/component:${ci_cd_params.tag}").withRun('-i', 'bash') {container ->
-                    sh(script: "mkdir target")
-                    sh(script: "docker cp ${container.id}:/root/rpmbuild/RPMS/x86_64/. target")
+                script {
+                    docker.image("penstock/rpm:${ci_cd_params.tag}").withRun('-i', 'bash') {container ->
+                        sh(script: "mkdir target")
+                        sh(script: "docker cp ${container.id}:/root/rpmbuild/RPMS/x86_64/. target")
+                    }
                 }
                 archiveArtifacts artifacts: 'target/*.rpm', fingerprint: true
             }
