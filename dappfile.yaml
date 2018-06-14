@@ -45,9 +45,4 @@ ansible:
       args:
         chdir: /opt/penstock
       become_user: penstock
-  setup:
-    - shell: bin/py.test src/penstock
-      args:
-        chdir: /opt/penstock
-      become_user: penstock
 
