@@ -112,6 +112,9 @@ pipeline {
                     branch "next"
                 }
             }
+            environment {
+                RELEASE = "${ci_cd_params.tag}"
+            }
             steps {
                 sh "dapp dimg build rpm"
                 sh "dapp dimg tag --tag ${ci_cd_params.tag} rpm penstock"

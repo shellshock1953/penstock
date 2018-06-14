@@ -60,10 +60,10 @@ docker:
     - bash
 ansible:
   beforeInstall:
-    - raw: dnf install --nodocs rpm-build -y
+    - raw: dnf install --nodocs rpm-build -y 
     - copy:
         src: '/opt/penstock/rpm/penstock.spec'
         dest: '/root/penstock.spec'
-    - shell: 'rpmbuild -ba /root/penstock.spec'
+    - shell: 'rpmbuild --define "rpm_release {{ env "RELEASE" }}" -ba /root/penstock.spec'
       args:
         chdir: '/root'

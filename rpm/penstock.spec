@@ -26,7 +26,7 @@
 
 Name: penstock
 Version: 0.3
-Release: xxx
+Release: %{rpm_release}
 Summary: no description given
 AutoReqProv: no
 BuildRoot: %buildroot
