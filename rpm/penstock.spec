@@ -1,4 +1,5 @@
-%define debug_package %{nil}
+%define _build_id_links none
+
 %define __spec_prep_post true
 %define __spec_prep_pre true
 %define __spec_build_post true
