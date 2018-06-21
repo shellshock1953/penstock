@@ -1,35 +1,30 @@
-# Disable the stupid stuff rpm distros include in the build process by default:
-#   Disable any prep shell actions. replace them with simply 'true'
+%define debug_package %{nil}
 %define __spec_prep_post true
 %define __spec_prep_pre true
-#   Disable any build shell actions. replace them with simply 'true'
 %define __spec_build_post true
 %define __spec_build_pre true
-#   Disable any install shell actions. replace them with simply 'true'
 %define __spec_install_post true
 %define __spec_install_pre true
-#   Disable any clean shell actions. replace them with simply 'true'
 %define __spec_clean_post true
 %define __spec_clean_pre true
-# Disable checking for unpackaged files ?
-#%undefine __check_files
 %{?systemd_requires}
-# Use md5 file digest method.
-# The first macro is the one used in RPM v4.9.1.1
 %define _binary_filedigest_algorithm 1
-# This is the macro I find on OSX when Homebrew provides rpmbuild (rpm v5.4.14)
 %define _build_binary_file_digest_algo 1
-
-# Use gzip payload compression
 %define _binary_payload w9.gzdio
 
+%define component penstock
+%define user psale
+%define source_build_path /opt/psale/%{component}
+%define source_unit_file /opt/psale/%{component}/rpm/%{component}.service
+%define source_path_config /opt/psale/%{component}/etc/%{component}.yml
+%define working_dir /opt/psale/%{component}
 
-Name: penstock
-Version: 0.3
-Release: %{rpm_release}
+Name: %{component}
+Version: 0.1
+Release: %{release}
 Summary: no description given
 AutoReqProv: no
-BuildRoot: %buildroot
+BuildRoot: /root/rpm
 
 Prefix: /
 
@@ -48,12 +43,13 @@ no description given
 %prep
 # noop
 rm -rf %{buildroot}
-mkdir %{buildroot}
-cp -r --parents /opt/penstock  %{buildroot}/
-mkdir -p %{buildroot}/etc/systemd/system/
-mkdir -p %{buildroot}/etc/penstock/
-cp /opt/penstock/rpm/penstock.service %{buildroot}/etc/systemd/system/penstock.service
-cp /opt/penstock/etc/penstock.yml %{buildroot}/etc/penstock/penstock.yml 
+mkdir -p %{buildroot}%{working_dir}
+mkdir -p %{buildroot}/usr/lib/systemd/system/
+mkdir -p %{buildroot}/etc/%{component}/
+cp -r %{source_build_path}/*  %{buildroot}/%{working_dir}/
+cp %{source_unit_file} %{buildroot}/usr/lib/systemd/system/%{component}.service
+cp %{source_path_config} %{buildroot}/etc/%{component}/
+
 %build
 # noop
 
@@ -64,24 +60,21 @@ cp /opt/penstock/etc/penstock.yml %{buildroot}/etc/penstock/penstock.yml
 # noop
 
 %pre
-getent group penstock >/dev/null || groupadd -r penstock
-getent passwd penstock >/dev/null || \
-    useradd -r -g penstock -s /sbin/nologin penstock
+getent group %{user} >/dev/null || groupadd -r %{user}
+getent passwd %{user} >/dev/null || useradd -r -g %{user} -s /sbin/nologin %{user}
 exit 0
 
 %post
-%systemd_user_post penstock.service
+%systemd_user_post %{component}.service
 
 %preun
-%systemd_user_preun penstock.service
-
+%systemd_user_preun %{component}.service
 
 %files
-%defattr(-,penstock,penstock,-)
-%config(noreplace) /etc/systemd/system/penstock.service
-%config(noreplace) /etc/penstock
-%attr(0755,penstock,penstock) /opt/penstock
+%defattr(-,%{user},%{user},-)
+%attr(0755,%{user},%{user}) %{working_dir}
+%attr(-,root,root) %{_unitdir}/%{component}.service
+%config(noreplace) /etc/%{component}
 
 %changelog
-
 

@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=penstock
-ExecStart=/opt/penstock/bin/penstock /etc/penstock/penstock.yml
+User=psale
+ExecStart=/opt/psale/penstock/bin/penstock /etc/penstock/penstock.yml
 Restart=on-abort
 
 [Install]
